@@ -1,6 +1,6 @@
 # Python API for Bluefruit LE Sniffer 
 
-This repository contains the Python API for Adafruit's Bluefruit LE Sniffer, and our easy to use API wrapper.
+This repository contains the Python API for Nordic's BLE Sniffer, and easy to use API wrapper.
 
 It has been tested on the following platforms using Python 2.7:
 
@@ -8,10 +8,12 @@ It has been tested on the following platforms using Python 2.7:
 - Windows 7 x64
 - Ubuntu 14.04
 
-## Related Links
+## Hardware
 
-Bluefruit LE Sniffer product page: https://www.adafruit.com/product/2269
-Bluefruit LE Sniffer Learning Guide: https://learn.adafruit.com/introducing-the-adafruit-bluefruit-le-sniffer/introduction
+Seeed Tiny BLE            ≈ $14
+Bluefruit LE Sniffer      ≈ $30
+RedBear BLE Nano Kit      ≈ $33
+Other nRF51 Dev Kits
 
 # Sniffer Python Wrapper
 
