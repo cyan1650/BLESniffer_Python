@@ -1,4 +1,4 @@
-import Packet, Exceptions, CaptureFiles, Devices, Notifications, Version
+from SnifferAPI import Packet, Exceptions, CaptureFiles, Devices, Notifications, Version
 import time, sys, threading, subprocess, os, logging, copy
 from serial import SerialException
 
@@ -150,10 +150,12 @@ class SnifferCollector(Notifications.Notifier):
         while not self._exit:
             try:
                 packet = self._packetReader.getPacket(timeout = 2)
-                if not packet.valid:
+                if packet == None or not packet.valid:
+                    packet.boardId = self._boardId
+                    self._appendPacket(packet)
                     raise Exceptions.InvalidPacketException("")
             except Exceptions.SnifferTimeout as e:
-                logging.info(str(e))
+                #logging.info(str(e))
                 packet = None
             except (SerialException, ValueError):
                 logging.exception("UART read error")                
