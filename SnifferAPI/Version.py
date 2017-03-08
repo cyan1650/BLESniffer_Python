@@ -1,4 +1,4 @@
-import myVersion
+from SnifferAPI import myVersion
 
 pdfVersion = "1.2"
 

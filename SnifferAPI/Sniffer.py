@@ -1,5 +1,5 @@
 import logging
-import Logger, Version
+from SnifferAPI import Logger, Version
 
 def initLog():
     Logger.initLogger()
@@ -12,7 +12,7 @@ initLog()
 
 
 import sys, os, threading
-import SnifferCollector
+from SnifferAPI import SnifferCollector
 
 
 

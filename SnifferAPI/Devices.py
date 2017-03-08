@@ -1,4 +1,4 @@
-import Notifications
+from SnifferAPI import Notifications
 import logging
 
 class DeviceList(Notifications.Notifier):
@@ -31,7 +31,7 @@ class DeviceList(Notifications.Notifier):
                 existingDevice.name = newDevice.name
                 updated = True
                 
-            if (newDevice.RSSI < (newDevice.RSSI - 5)) or (existingDevice.RSSI > (newDevice.RSSI+2)):
+            if (newDevice.RSSI < (existingDevice.RSSI - 5)) or (newDevice.RSSI > (existingDevice.RSSI+2)):
                 existingDevice.RSSI = newDevice.RSSI
                 updated = True
                 

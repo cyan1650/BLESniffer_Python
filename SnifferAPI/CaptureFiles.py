@@ -1,5 +1,5 @@
 import time, os, logging
-import Logger
+from SnifferAPI import Logger
 
 LINKTYPE_BLUETOOTH_LE_LL     = 251
 LINKTYPE_NORDIC_BLE            = 157
