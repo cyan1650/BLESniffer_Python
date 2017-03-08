@@ -8,7 +8,15 @@ class Uart:
         try:
             self.ser = serial.Serial(
                         port        = portnum,
-                        baudrate    = 115200,
+                        baudrate    = 115200
+                       )
+            # We start with baud 115200, and then switch to 460800
+            # This helps to get proper output on some USB-Serial chips
+            self.ser.close()
+
+            self.ser = serial.Serial(
+                        port        = portnum,
+                        baudrate    = 460800,
                         bytesize    = serial.EIGHTBITS,
                         parity      = serial.PARITY_NONE,
                         stopbits    = serial.STOPBITS_ONE,
@@ -16,12 +24,6 @@ class Uart:
                         writeTimeout= None,
                         rtscts      = False
                        )
-            # We start with baud 115200, and then switch to 460800
-            # This helps to get proper output on some USB-Serial chips
-            self.ser.close()
-            self.ser.port     = portnum
-            self.ser.baudrate = 460800
-            self.ser.open()
 
             if self.ser.name == None:
                 logging.error("Cannot open serial")
