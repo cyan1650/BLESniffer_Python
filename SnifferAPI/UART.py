@@ -1,34 +1,42 @@
 import logging, serial, collections
 import serial.tools.list_ports as list_ports
-import Exceptions
+from SnifferAPI import Exceptions
 
 class Uart:
     def __init__(self, portnum = None, useByteQueue = False):
         self.ser = None
         try:
             self.ser = serial.Serial(
-                        port         = portnum,
-                        baudrate    = 460800,
+                        port        = portnum,
+                        baudrate    = 115200,
                         bytesize    = serial.EIGHTBITS,
                         parity      = serial.PARITY_NONE,
                         stopbits    = serial.STOPBITS_ONE,
                         timeout     = None, #seconds
                         writeTimeout= None,
-                        rtscts         = True 
-                        ) 
-            
+                        rtscts      = False
+                       )
+            # We start with baud 115200, and then switch to 460800
+            # This helps to get proper output on some USB-Serial chips
+            self.ser.close()
+            self.ser.port     = portnum
+            self.ser.baudrate = 460800
+            self.ser.open()
+
+            if self.ser.name == None:
+                logging.error("Cannot open serial")
+
         except Exception as e:
-            if self.ser:
-                self.ser.close()
+            self.close()
             raise
         
         self.useByteQueue = useByteQueue
         self.byteQueue = collections.deque()
 
-        # if self.ser.name != None:
-            # print "UART %s on port %s" % ("open" if self.ser else "closed", self.ser.name)
-
     def __del__(self):
+        self.close()
+
+    def close(self):
         if self.ser:
             logging.info("closing UART")
             self.ser.close()
@@ -43,8 +51,14 @@ class Uart:
                 self.ser.timeout = timeout
             except ValueError as e:
                 logging.error("Error setting UART read timeout. Continuing.")
-            
-        value = self.ser.read(length)
+
+        try:
+            value = self.ser.read(length)
+        except Exception as e:
+            logging.error("UART Error:" + str(e))
+            self.close()
+            raise
+
         if len(value) != length:
             raise Exceptions.SnifferTimeout("UART read timeout ("+ str(self.ser.timeout) +" seconds).")
         
@@ -53,12 +67,9 @@ class Uart:
         return value
             
     def readByte(self, timeout = None):
-        readString = ""
-        
         readString = self.read(1, timeout)
-            
         return readString
-        
+
     def readList(self, size, timeout = None):
         return self.read(size, timeout)
         
@@ -71,8 +82,9 @@ class Uart:
                 logging.error("Error setting UART write timeout. Continuing.")
         try:
             nBytes = self.ser.write(array)
-        except:
-            self.ser.close()
+        except Exception as e:
+            logging.error("UART Error:" + str(e))
+            self.close()
             raise
         
         return nBytes
