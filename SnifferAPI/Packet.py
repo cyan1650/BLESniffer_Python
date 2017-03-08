@@ -1,4 +1,4 @@
-import UART, Exceptions, Notifications
+from SnifferAPI import UART, Exceptions, Notifications
 import time, logging, os, sys, serial
 
 SLIP_START = 0xAB
@@ -86,12 +86,12 @@ class PacketReader(Notifications.Notifier):
         
     def setup(self):
         self.findSerialPort()
-        self.uart.ser.port = self.portnum
-        self.uart.ser.open
+        #self.uart.ser.port = self.portnum
+        #self.uart.ser.open()
     
     def doExit(self):
         self.exit = True
-        self.uart.ser.close()
+        self.uart.close()
 
     # This function takes a byte list, encode it in SLIP protocol and return the encoded byte list
     def encodeToSLIP(self, byteList):
@@ -118,10 +118,15 @@ class PacketReader(Notifications.Notifier):
         dataBuffer = []
         startOfPacket = False
         endOfPacket = False
-        
+
+        slipSkipped = -1
         while not startOfPacket:
             startOfPacket = (self.getSerialByte(timeout) == SLIP_START)
-        
+            slipSkipped += 1
+
+        if slipSkipped > 0:
+            raise Exceptions.UARTPacketError("SLIP skipped " + str(slipSkipped) + " bytes")
+
         while not endOfPacket:
             serialByte = self.getSerialByte(timeout)
             if serialByte == SLIP_END:
@@ -145,7 +150,7 @@ class PacketReader(Notifications.Notifier):
     def getSerialByte(self, timeout = None):
         serialByte = self.uart.readByte(timeout)
         if len(serialByte) != 1:
-            raise Exceptions.SnifferTimeout("Packet read timed out.")
+            raise Exceptions.SnifferTimeout("Byte read timed out.")
         return ord(serialByte)
 
             
@@ -181,18 +186,18 @@ class PacketReader(Notifications.Notifier):
         packetString = listToString(self.encodeToSLIP(packetList))
         self.packetCounter += 1
         self.uart.writeList(packetString, timeout)
-        
+
     def sendScan(self, timeout = None):
         self.sendPacket(REQ_SCAN_CONT, [], timeout)
-        
+
     def sendFollow(self, addr, txAdd=1, followOnlyAdvertisements = False, timeout = None):
         # TxAdd is a single byte (0 or 1) so we just append it to the address.
         # addr.append(txAdd)
         self.sendPacket(REQ_FOLLOW, addr+[followOnlyAdvertisements], timeout)
-    
+
     def sendPingReq(self, timeout = 1):
         self.sendPacket(PING_REQ, [], timeout)
-        
+
     def sendTK(self, TK, timeout = None):
         if (len(TK) < 16):
             TK = [0] * (16-len(TK)) + TK
@@ -222,28 +227,16 @@ class PacketReader(Notifications.Notifier):
         self.sendPacket(GO_IDLE, [], timeout)
         
     
-    def findSerialPort(self):            
-        foundPort = False
-        iPort = 0 # To avoid COM1 (iPort=0).
-        nTicks = 0
-        
-        # comports = self.findSeggerComPorts().keys()
-        
-        
-        
+    def findSerialPort(self):
         if self.portnum != None:
             self.notify("INFO_PRESET")
         else:
             self.notify("INFO_NO_PRESET")
+            return
         
         readTimeout = 0.1
-        lastConfigComPort = self.portnum
-        iPort = self.portnum if self.portnum!= None else 1
-        while not foundPort and not self.exit:
-
+        while not self.exit:
             try:
-                self.uart.ser.port = iPort
-                self.uart.ser.open()
                 self.sendPingReq()
                 startTime = time.time()
                 continueLoop = True
@@ -251,13 +244,10 @@ class PacketReader(Notifications.Notifier):
                 while continueLoop and (time.time() < (startTime+1)):
                     packet = self.getPacket(timeout = readTimeout)
                     
-                    if packet == None:
-                        continueLoop = False
-                        raise Exception("None packet")
-                    elif packet.id == 0x0E:
+                    if packet != None and packet.id == PING_RESP:
                         continueLoop = False
                         fwversion = packet.version
-                        self.portnum = self.uart.ser.portstr
+                        self.portnum = self.uart.ser.name
                         self.notify("COMPORT_FOUND", {"comPort": self.portnum})
                         self.fwversion = fwversion
                         return
@@ -268,36 +258,8 @@ class PacketReader(Notifications.Notifier):
                     raise Exception("No packet with correct id. Received "+str(packetCounter)+" packets.")
                 
             except Exception as e:
-                if "The system cannot find the file specified." not in str(e):
-                    # logging.exception("Error on COM"+str(iPort+1)+": "+str(e))
-                    logging.info("Error on port "+str(iPort)+". file: "+os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename)+", line "+str(sys.exc_info()[2].tb_lineno)+": "+str(e))
-                    # logging.exception("error")
-                try:
-                    self.uart.ser.close()
-                except:
-                    logging.exception("could not close UART")
-            
-            if self.portnum == None:
-                if type(iPort) != int:
-                    iPort = 0
-                iPort += 1
-                iPort = (iPort % 256)
-            
-            if self.portnum != None or (iPort % 64) == 0:
-                nTicks += 1
-                self.notify("DEVICE_DISCOVERY_TICK", {"tickNumber":nTicks})
-                if readTimeout < 3:
-                    readTimeout += 0.1
-            
-            # logging.info("iPort: " +str(iPort))
-            # logging.info("self.portnum: " +str(self.portnum))
-            
-            if self.portnum != None:
-                time.sleep(0.7)
-            else:
-                time.sleep(0.01)
-        return (None, None)
-        
+                raise
+
 class Packet:
         
     def __init__(self, packetList):
@@ -320,8 +282,10 @@ class Packet:
             self.valid = False
 
     def __repr__(self):
-        return "UART packet, type: "+str(self.id)+", PC: "+str(self.packetCounter)
-    
+        if not self.valid:
+            return "Packet, invalid"
+        return "Packet, type: %d PC: %d len: %d" % (self.id, self.packetCounter, self.payloadLength)
+
     def readStaticHeader(self, packetList):
         self.headerLength = packetList[HEADER_LEN_POS]
         self.payloadLength = packetList[PAYLOAD_LEN_POS]
