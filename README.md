@@ -1,19 +1,20 @@
 # Python API for Bluefruit LE Sniffer 
 
 This repository contains the Python API for Nordic's BLE Sniffer, and easy to use API wrapper.
+Supports **live capture** on Windows, Linux, and OSX.
 
 It has been tested on the following platforms using Python 2.7:
 
 - OSX 10.10
-- Windows 7 x64
-- Ubuntu 14.04
+- Windows 10 x64
+- Ubuntu 16.10
 
 ## Hardware
 
-Seeed Tiny BLE            ≈ $14
-Bluefruit LE Sniffer      ≈ $30
-RedBear BLE Nano Kit      ≈ $33
-Other nRF51 Dev Kits
+* Seeed Tiny BLE            **≈ $14**
+* Bluefruit LE Sniffer      **≈ $30**
+* RedBear BLE Nano Kit      **≈ $33**
+* Other nRF51 Dev Kits
 
 # Sniffer Python Wrapper
 
@@ -30,7 +31,7 @@ To use sniffer.py, simply specify the serial port where the sniffer can be found
 python sniffer.py /dev/tty.usbmodem1412311
 ```
 
-**Note:** You will need to run python with `sudo` on Linux to allow the log file to be created, so `sudo python sniffer.py /dev/ttyACM0`, etc..
+**Note:** You may need to run python with `sudo` on Linux.
 
 This will create a new log file and start scanning for BLE devices, which should result in the following menu:
 
@@ -56,4 +57,5 @@ Type **CTRL+C** to stop sniffing and quit the application, closing the libpcap l
 
 ## Requirements
 
-This Python script was written and tested on **Python 2.7.6**, and will require that both Python 2.7 and **pySerial** are installed on your system.
+This Python script will require that both Python 2.7 and **pySerial** are installed on your system.
+For Windows live capture support, you need to install **PyWin32**.
