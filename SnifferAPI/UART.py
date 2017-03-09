@@ -22,7 +22,7 @@ class Uart:
                         stopbits    = serial.STOPBITS_ONE,
                         timeout     = None, #seconds
                         writeTimeout= None,
-                        rtscts      = False
+                        rtscts      = True
                        )
 
             if self.ser.name == None:
