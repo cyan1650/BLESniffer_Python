@@ -83,7 +83,7 @@ def selectDevice(devlist):
                                                                              "%02X" % d.address[5],
                                                                              d.RSSI))
         try:
-            i = int(raw_input("\nSelect a device to sniff, or '0' to scan again\n> "))
+            i = int(input("\nSelect a device to sniff, or '0' to scan again\n> "))
         except KeyboardInterrupt:
             raise KeyboardInterrupt
             return None

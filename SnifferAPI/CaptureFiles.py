@@ -13,7 +13,7 @@ SNAPLEN                     = 0xFFFF
 NETWORK                     = LINKTYPE_NORDIC_BLE
 
 
-globalHeaderString = [    
+globalHeaderString = [
                             ((MAGIC_NUMBER     >> 0) & 0xFF),
                             ((MAGIC_NUMBER     >> 8) & 0xFF),
                             ((MAGIC_NUMBER     >> 16) & 0xFF),
@@ -136,9 +136,10 @@ def toString(myList):
             logging.exception("byte: %d, list: %s" % (i, str(myList)))
             raise
     return myString
-        
+
 def toList(myString):
     myList = []
     for c in myString:
         myList += [ord(c)]
     return myList
+
