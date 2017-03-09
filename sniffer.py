@@ -134,19 +134,42 @@ def loop():
                 sys.stdout.flush()
 
 
+def findWireshark():
+    if sys.platform == 'win32':
+        programs = [ "Wireshark.exe", "WiresharkPortable.exe" ]
+    else:
+        programs = [ "wireshark" ]
+
+    pathenv = os.environ["PATH"]
+
+    if 'PROGRAMFILES' in os.environ:
+        pathenv += os.pathsep + os.path.join(os.environ['PROGRAMFILES'], 'Wireshark')
+
+    if 'PROGRAMFILES(X86)' in os.environ:
+        pathenv += os.pathsep + os.path.join(os.environ['PROGRAMFILES(X86)'], 'Wireshark')
+
+    pathenv += os.pathsep + os.path.join(os.path.expanduser('~'), 'Downloads', 'WiresharkPortable')
+
+    #print("Looking for WS: " + pathenv)
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    for path in pathenv.split(os.pathsep):
+        path = path.strip('"')
+        for program in programs:
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return programs[0]
+
 def setupPipe():
     """setup pipe"""
     # Create a named pipe for Wireshark capture
     myPipe = PcapPipe('ble.pipe')
 
-    if sys.platform == 'win32':
-        ws_app = r'C:\Program Files (x86)\Wireshark\Wireshark.exe'
-        ws_app = r'C:\Program Files\Wireshark\Wireshark.exe'
-        ws_app = r'C:\Users\volodymyr.shymanskyy\Downloads\WiresharkPortable\WiresharkPortable.exe'
-        ws_app = '"' + ws_app + '"'
-    else:
-        ws_app = 'wireshark'
-
+    ws_app = findWireshark()
     ws_script = 'lua_script:nordic_ble.lua'
     ws_filter = '!(btle.data_header.length==0)'
     ws_cmd = '%s -X %s -Y "%s" -i "%s" -k' % (ws_app, ws_script, ws_filter, myPipe.getPipeName())
