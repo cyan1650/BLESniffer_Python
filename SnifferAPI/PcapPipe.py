@@ -28,7 +28,11 @@ class PipeUnix():
     def open(self):
         import fcntl
 
-        self._pipe = open(self._pipeName, 'w')
+        self._pipe = open(self._pipeName, 'wb')
+
+    def close(self):
+        self._pipe.close()
+        self._pipe = None
 
     def write(self, data):
         if not self._pipe: return
@@ -62,6 +66,11 @@ class PipeWin32():
             raise SystemExit(1)
 
         win32pipe.ConnectNamedPipe(self._pipe, None)
+
+    def close(self):
+        win32pipe.DisconnectNamedPipe(self._pipe)
+        self._pipe.Close()
+        self._pipe = None
 
     def write(self, data):
         if not self._pipe: return
