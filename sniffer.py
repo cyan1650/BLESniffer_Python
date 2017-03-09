@@ -223,6 +223,12 @@ if __name__ == '__main__':
     print("Software Version: " + str(mySniffer.swversion))
     print("Firmware Version: " + str(mySniffer.fwversion))
 
+    if mySniffer.fwversion == 0:
+        print("Sniffer board is not responding. Please re-plug the board.")
+        sys.exit(-1)
+    elif mySniffer.fwversion != 1111:
+        print("Sniffer board FW version is invalid.")
+
     # Scan for devices in range until the user makes a selection
     try:
         d = None
