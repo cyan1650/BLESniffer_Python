@@ -142,16 +142,18 @@ def findWireshark():
 
     pathenv = os.environ["PATH"]
 
+    pathenv += os.pathsep + os.path.join(os.path.expanduser('~'), 'Downloads', 'WiresharkPortable')
+
     if 'PROGRAMFILES' in os.environ:
         pathenv += os.pathsep + os.path.join(os.environ['PROGRAMFILES'], 'Wireshark')
 
     if 'PROGRAMFILES(X86)' in os.environ:
         pathenv += os.pathsep + os.path.join(os.environ['PROGRAMFILES(X86)'], 'Wireshark')
 
-    pathenv += os.pathsep + os.path.join(os.path.expanduser('~'), 'Downloads', 'WiresharkPortable')
+    if 'PROGRAMW6432' in os.environ:
+        pathenv += os.pathsep + os.path.join(os.environ['PROGRAMW6432'], 'Wireshark')
 
     #print("Looking for WS: " + pathenv)
-
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -170,6 +172,8 @@ def setupPipe():
     myPipe = PcapPipe('ble.pipe')
 
     ws_app = findWireshark()
+    if sys.platform == 'win32':
+        ws_app = '"' + ws_app + '"'
     ws_script = 'lua_script:nordic_ble.lua'
     ws_filter = '!(btle.data_header.length==0)'
     ws_cmd = '%s -X %s -Y "%s" -i "%s" -k' % (ws_app, ws_script, ws_filter, myPipe.getPipeName())
