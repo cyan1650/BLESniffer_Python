@@ -41,9 +41,9 @@ python ./sniffer.py --pipe /dev/ttyACM0
 This will create a log file and start scanning for BLE devices, which should result in the following menu:
 
 ```
-$ python sniffer.py /dev/tty.usbmodem1412311
+$ python sniffer.py /dev/ttyACM0
 Logging data to logs/capture.pcap
-Connecting to sniffer on /dev/tty.usbmodem1412311
+Connecting to sniffer on /dev/ttyACM0
 Scanning for BLE devices (5s) ...
 Found 2 BLE devices:
 
