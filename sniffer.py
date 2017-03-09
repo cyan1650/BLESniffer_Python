@@ -228,6 +228,11 @@ if __name__ == '__main__':
     # Parser the arguments passed in from the command-line
     args = argparser.parse_args()
 
+    if (sys.version_info > (3, 0)):
+        print("Python 3 is not supported")
+        if not args.verbose:
+            sys.exit(-1)
+
     # Display the libpcap logfile location
     print("Capturing data to " + args.logfile)
     CaptureFiles.captureFilePath = args.logfile
