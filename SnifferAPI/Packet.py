@@ -86,8 +86,6 @@ class PacketReader(Notifications.Notifier):
         
     def setup(self):
         self.findSerialPort()
-        #self.uart.ser.port = self.portnum
-        #self.uart.ser.open()
     
     def doExit(self):
         self.exit = True
@@ -234,7 +232,6 @@ class PacketReader(Notifications.Notifier):
             self.notify("INFO_NO_PRESET")
             return
         
-        readTimeout = 0.1
         while not self.exit:
             try:
                 self.sendPingReq()
@@ -242,12 +239,15 @@ class PacketReader(Notifications.Notifier):
                 continueLoop = True
                 packetCounter = 0
                 while continueLoop and (time.time() < (startTime+1)):
-                    packet = self.getPacket(timeout = readTimeout)
+                    packet = self.getPacket(timeout = 0.5)
                     
-                    if packet != None and packet.id == PING_RESP:
+                    if packet == None:
+                        continueLoop = False
+                        raise Exception("None packet")
+                    elif packet.id == PING_RESP:
                         continueLoop = False
                         fwversion = packet.version
-                        self.portnum = self.uart.ser.name
+                        self.portnum = self.uart.ser.portstr
                         self.notify("COMPORT_FOUND", {"comPort": self.portnum})
                         self.fwversion = fwversion
                         return
